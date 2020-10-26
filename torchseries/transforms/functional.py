@@ -241,7 +241,7 @@ def time_warp(x, axis=0, backend="cubic_spline", **kwargs):
     cumsum_waves *= torch.true_divide(temporal_len - 1, cumsum_waves[-1, :])
     cumsum_waves = cumsum_waves.t()
 
-    x_range = torch.arange(temporal_len)
+    x_range = torch.arange(temporal_len).reshape(1, temporal_len)
     y_interp = _interp1d(x_range, cumsum_waves, x)
     if axis:
         return y_interp.t()
