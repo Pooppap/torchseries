@@ -47,6 +47,15 @@ class RandomChoiceApply(torch.nn.Module):
         return t(input)
 
 
+class ToFloat(torch.nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, input):
+        return input.float()
+
+
 class Transpose(torch.nn.Module):
 
     def __init__(self):
