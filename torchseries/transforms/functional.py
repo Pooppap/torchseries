@@ -286,7 +286,7 @@ def permute(x, axis=0, n_segs=4, **kwargs):
     seg_len_list = _get_rand_seg_len(temporal_len, n_segs, **kwargs)
     x_list = torch.split(x, seg_len_list, dim=1)
     rand_idx = torch.randperm(n_segs)
-    y = torch.cat([y[idx] for idx in rand_idx], dim=1)
+    y = torch.cat([x_list[idx] for idx in rand_idx], dim=1)
 
     if axis:
         return y.t()
