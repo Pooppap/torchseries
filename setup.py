@@ -5,7 +5,7 @@ with open("README.md", "r") as r:
 
 setuptools.setup(
     name="torchseries",
-    version="0.1.6",
+    version="0.1.7",
     author="CA1216",
     author_email="ca1216@ic.ac.uk",
     description="PyTorch Time-Series Augmentation",

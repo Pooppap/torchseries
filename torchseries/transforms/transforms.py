@@ -4,10 +4,16 @@ import random
 from . import functional as F
 
 
-class Compose(torch.nn.Sequential):
+class Compose(torch.nn.Module):
 
-    def __init__(self, *args):
-        super().__init__(*args)
+    def __init__(self, transforms):
+        super().__init__()
+        self.transforms = torch.nn.ModuleList(transforms)
+
+    def forward(self, input):
+        for t in self.transforms:
+            input = t(input)
+        return input
 
 
 class RandomApply(torch.nn.Module):
