@@ -113,4 +113,22 @@ class MagnitudeWarp(torch.nn.Module):
             backend=self.backend,
             **self.kwargs
         )
+
+
+class Permute(torch.nn.Module):
+
+    def __init__(self, axis=0, n_segs=4, **kwargs):
+        super().__init__()
+        self.axis = axis
+        self.n_segs = n_segs
+        self.kwargs = kwargs
+
+    def forward(self, input):
+        assert len(input.shape) == 2, f"Expected input to only have 2 dimensions. Instead receive input with dimension of {len(input.shape)}"
+        return F.permute(
+            input,
+            axis=self.axis,
+            n_segs=self.n_segs,
+            **self.kwargs
+        )
         
