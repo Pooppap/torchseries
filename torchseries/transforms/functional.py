@@ -207,7 +207,7 @@ def _interp1d(x, xp, yp):
 
 
 def scale(x, mean=1.0, std=0.1, axis=0):
-    noise = torch.normal(mean, std, x.size(axis))
+    noise = torch.normal(mean, std, (x.size(axis),))
     return x * noise
 
 
