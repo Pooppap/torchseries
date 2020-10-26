@@ -1,4 +1,5 @@
 import torch
+import random
 
 from . import functional as F
 
@@ -7,6 +8,37 @@ class Compose(torch.nn.Sequential):
 
     def __init__(self, *args):
         super().__init__(*args)
+
+
+class RandomApply(torch.nn.Module):
+
+    def __init__(self, transforms, p=0.5):
+        super().__init__()
+        self.p = p
+        self.transforms = torch.nn.ModuleList(transforms)
+
+    def forward(self, input):
+        if self.p < random.random():
+            return input
+        
+        for t in self.transforms:
+            input = t(input)
+
+        return input
+
+
+class RandomChoiceApply(torch.nn.Module):
+
+    def __init__(self, transforms, p=0.5):
+        super().__init__()
+        self.p = p
+        self.transforms = torch.nn.ModuleList(transforms)
+
+    def forward(self, input):
+        t = random.choice(self.transforms)
+        if self.p < random.random():
+            return input
+        return t(input)
 
 
 class Transpose(torch.nn.Module):
