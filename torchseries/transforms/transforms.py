@@ -178,4 +178,12 @@ class Permute(torch.nn.Module):
             n_segs=self.n_segs,
             **self.kwargs
         )
-        
+
+
+class Passthrough(torch.nn.Module):
+
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, input):
+        return input
