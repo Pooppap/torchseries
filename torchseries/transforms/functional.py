@@ -245,7 +245,7 @@ def time_warp(x, axis=0, backend="cubic_spline", **kwargs):
     y_interp = _interp1d(x_range, cumsum_waves, x)
     if axis:
         return y_interp.t()
-    return y_interp
+    return y_interp.type(x.type())
 
 
 def magnitude_warp(x, axis=0, backend="cubic_spline", **kwargs):
@@ -262,10 +262,10 @@ def magnitude_warp(x, axis=0, backend="cubic_spline", **kwargs):
     else:
         raise ValueError(f"The chosen backend {backend} is not supported. Supported backend: \"cubic_spline\", \"bezier\"")
 
-    y = x * waves
+    y = x * waves.t()
     if axis:
         return y.t()
-    return y
+    return y.type(x.type())
 
 
 def _get_rand_seg_len(x_len, n_segs, std=2.0, **kwargs):
