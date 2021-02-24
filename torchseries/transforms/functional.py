@@ -3,7 +3,7 @@ import math as _math
 import torch as _torch
 import warnings as _warnings
 
-from scipy import _interpolate
+from scipy import interpolate as _interpolate
 
 
 PI = 2 * _torch.acos(_torch.zeros(1))
