@@ -1,7 +1,7 @@
 import torch
 import random
 
-from . import functional as F
+from . import functional as _F
 
 
 class Compose(torch.nn.Module):
@@ -74,7 +74,7 @@ class Scale(torch.nn.Module):
         self.axis = axis
 
     def forward(self, input):
-        return F.scale(
+        return _F.scale(
             input,
             mean=self.mean,
             std=self.std,
@@ -90,7 +90,7 @@ class Jitter(torch.nn.Module):
         self.mean = mean
 
     def forward(self, input):
-        return F.jitter(
+        return _F.jitter(
             input,
             mean=self.mean,
             std=self.std
@@ -117,7 +117,7 @@ class Rotate(torch.nn.Module):
 
         input_reshaped = input.reshape((self.n_sensors * 2), 3, temporal_len)
         input_chunked = input_reshaped.chunk(self.n_sensors)
-        input_rotated = torch.cat([F.rotate(chunk) for chunk in input_chunked])
+        input_rotated = torch.cat([_F.rotate(chunk) for chunk in input_chunked])
 
         input_return = input_rotated.reshape(-1, temporal_len)
         if self.axis:
@@ -136,7 +136,7 @@ class TimeWarp(torch.nn.Module):
 
     def forward(self, input):
         assert len(input.shape) == 2, f"Expected input to only have 2 dimensions. Instead receive input with dimension of {len(input.shape)}"
-        return F.time_warp(
+        return _F.time_warp(
             input,
             axis=self.axis,
             backend=self.backend,
@@ -154,7 +154,7 @@ class MagnitudeWarp(torch.nn.Module):
 
     def forward(self, input):
         assert len(input.shape) == 2, f"Expected input to only have 2 dimensions. Instead receive input with dimension of {len(input.shape)}"
-        return F.magnitude_warp(
+        return _F.magnitude_warp(
             input,
             axis=self.axis,
             backend=self.backend,
@@ -172,7 +172,7 @@ class Permute(torch.nn.Module):
 
     def forward(self, input):
         assert len(input.shape) == 2, f"Expected input to only have 2 dimensions. Instead receive input with dimension of {len(input.shape)}"
-        return F.permute(
+        return _F.permute(
             input,
             axis=self.axis,
             n_segs=self.n_segs,
