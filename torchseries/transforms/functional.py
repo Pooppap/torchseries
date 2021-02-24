@@ -1,19 +1,19 @@
-import math
-import torch
-import warnings
-import numpy as np
+import numpy as _np
+import math as _math
+import torch as _torch
+import warnings as _warnings
 
-from scipy import interpolate
+from scipy import _interpolate
 
 
-PI = 2 * torch.acos(torch.zeros(1))
+PI = 2 * _torch.acos(_torch.zeros(1))
 
 
 def _ax_angle_to_mat(axis, angle):
-    n = torch.norm(axis)
+    n = _torch.norm(axis)
     x, y, z = axis / n
-    c = torch.cos(angle)
-    s = torch.sin(angle)
+    c = _torch.cos(angle)
+    s = _torch.sin(angle)
 
     xs = x*s
     ys = y*s
@@ -22,7 +22,7 @@ def _ax_angle_to_mat(axis, angle):
     yC = y*(1-c)
     zC = z*(1-c)
 
-    return torch.tensor(
+    return _torch.tensor(
         [
             [x*xC + c, x*yC - zs, x*zC + ys],
             [y*xC + zs, y*yC + c, y*zC - xs],
@@ -40,7 +40,7 @@ def _bernstein(n, i, t):
     :param t: (float)
     :return: (float)
     """
-    binomial_coeff = torch.combinations(torch.arange(n), i).size(0) if i > 0 else torch.ones(1)
+    binomial_coeff = _torch.combinations(_torch.arange(n), i).size(0) if i > 0 else _torch.ones(1)
     return binomial_coeff * t.pow(i) * (1 - t).pow(n - i)
 
 
@@ -52,7 +52,7 @@ def _bezier_point(t, control_points):
     :return: (torch tensor) Coordinates of the point
     """
     n = len(control_points) - 1
-    return torch.stack([_bernstein(n, i, t) * control_point for i, control_point in enumerate(control_points)]).sum(0)
+    return _torch.stack([_bernstein(n, i, t) * control_point for i, control_point in enumerate(control_points)]).sum(0)
 
 
 def _bezier_path(control_points, n_points=4):
@@ -62,8 +62,8 @@ def _bezier_path(control_points, n_points=4):
     :param n_points: (int) number of points in the trajectory
     :return: (torch tensor)
     """
-    traj = [_bezier_point(t, control_points) for t in torch.linspace(0, 1, n_points)]
-    return torch.stack(traj)
+    traj = [_bezier_point(t, control_points) for t in _torch.linspace(0, 1, n_points)]
+    return _torch.stack(traj)
 
 
 def _get_bezier_len(n_points, complexity):
@@ -83,24 +83,24 @@ def _get_bezier_n_points(x_len, complexity):
     :param complexity: (int) order of complexity of the bezier curve
     :return: (int)
     """
-    return math.ceil((x_len / (2 * (complexity - 1))) + 1)
+    return _math.ceil((x_len / (2 * (complexity - 1))) + 1)
 
 
 def _generate_bezier_wave(x_len, mean=1.0, std=0.2, complexity=5, controls=[0.25, 0.75], **kwargs):
     n_points = _get_bezier_n_points(x_len, complexity)
     bezier_len = _get_bezier_len(n_points, complexity)
     step = round(bezier_len / complexity)
-    points_x = torch.tensor(
+    points_x = _torch.tensor(
         [
             0,
             *[
-                torch.normal(idx, std, size=(1,)) for idx in torch.linspace(step, bezier_len - step, complexity - 2)
+                _torch.normal(idx, std, size=(1,)) for idx in _torch.linspace(step, bezier_len - step, complexity - 2)
             ],
             bezier_len
         ]
     )
-    points_y = torch.normal(mean, std, size=(complexity,))
-    points = torch.stack([points_x, points_y]).T
+    points_y = _torch.normal(mean, std, size=(complexity,))
+    points = _torch.stack([points_x, points_y]).T
 
     wave = []
     current_point = points[0, ...]
@@ -108,7 +108,7 @@ def _generate_bezier_wave(x_len, mean=1.0, std=0.2, complexity=5, controls=[0.25
         for j, control in enumerate(controls):
             mid_point = (points[i, ...] + (points[i + 1, ...] - points[i, ...]) * control)
             if j == 0:
-                points_input = torch.stack(
+                points_input = _torch.stack(
                     [
                         current_point,
                         points[i, ...],
@@ -116,7 +116,7 @@ def _generate_bezier_wave(x_len, mean=1.0, std=0.2, complexity=5, controls=[0.25
                     ]
                 )
             else:
-                points_input = torch.stack(
+                points_input = _torch.stack(
                     [
                         current_point,
                         mid_point
@@ -130,18 +130,18 @@ def _generate_bezier_wave(x_len, mean=1.0, std=0.2, complexity=5, controls=[0.25
             wave.append(bezier_line[:-1, :])
             current_point = mid_point
     
-    return torch.cat(wave)[:x_len, :]
+    return _torch.cat(wave)[:x_len, :]
 
 
 def _generate_cubic_spline_wave(x_len, mean=1.0, std=0.2, complexity=5, **kwargs):
-    x = np.arange(0, x_len, (x_len - 1) / (complexity - 1))
-    y = np.random.normal(loc=mean, scale=std, size=(complexity, ))
-    cs = interpolate.CubicSpline(x, y)
-    return torch.as_tensor(cs(np.arange(x_len)))
+    x = _np.arange(0, x_len, (x_len - 1) / (complexity - 1))
+    y = _np.random.normal(loc=mean, scale=std, size=(complexity, ))
+    cs = _interpolate.CubicSpline(x, y)
+    return _torch.as_tensor(cs(_np.arange(x_len)))
 
 
 def _interp1d(x, xp, yp):
-    eps = torch.finfo(yp.dtype).eps
+    eps = _torch.finfo(yp.dtype).eps
 
     for vec in [x, xp, yp]:
         assert vec.ndim == 2, "_interp1d expects all input to have 2D shape"
@@ -169,26 +169,26 @@ def _interp1d(x, xp, yp):
 
     max_dim = max(xp.size(0), x.size(0))
     shape_y = (max_dim, x.size(-1))
-    y = torch.zeros(*shape_y)
+    y = _torch.zeros(*shape_y)
 
     ind = y.long()
 
     if x.is_singular:
         x = x.expand(xp.size(0), -1)
 
-    torch.searchsorted(
+    _torch.searchsorted(
         xp.contiguous(),
         x.contiguous(),
         out=ind
     )
 
     ind -= 1
-    ind = torch.clamp(ind, 0, xp.size(1) - 1 - 1)
+    ind = _torch.clamp(ind, 0, xp.size(1) - 1 - 1)
 
     def sel(vec):
         if vec.is_singular:
             return vec.contiguous().view(-1)[ind]
-        return torch.gather(vec, 1, ind)
+        return _torch.gather(vec, 1, ind)
     
     slopes = (
         (yp[:, 1:] - yp[:, :-1])
@@ -207,20 +207,20 @@ def _interp1d(x, xp, yp):
 
 
 def scale(x, mean=1.0, std=0.1, axis=0):
-    noise = torch.normal(mean, std, (x.size(axis),))
-    return torch.mul(x.t(), noise).t()
+    noise = _torch.normal(mean, std, (x.size(axis),))
+    return _torch.mul(x.t(), noise).t()
 
 
 def jitter(x, mean=0.0, std=0.05):
-    noise = torch.normal(mean, std, x.size())
+    noise = _torch.normal(mean, std, x.size())
     return x + noise
 
 
 def rotate(x):
-    axis = 2 * torch.rand(3) - 1
-    angle = 2 * PI * torch.rand(1) - PI
+    axis = 2 * _torch.rand(3) - 1
+    angle = 2 * PI * _torch.rand(1) - PI
     rot = _ax_angle_to_mat(axis, angle)
-    return torch.matmul(rot, x)
+    return _torch.matmul(rot, x)
 
 
 def time_warp(x, axis=0, backend="cubic_spline", **kwargs):
@@ -230,18 +230,18 @@ def time_warp(x, axis=0, backend="cubic_spline", **kwargs):
     spatial_len, temporal_len = x.size()
     
     if backend == "cubic_spline":
-        waves = torch.stack([_generate_cubic_spline_wave(temporal_len, **kwargs) for _ in range(spatial_len)], dim=1)
+        waves = _torch.stack([_generate_cubic_spline_wave(temporal_len, **kwargs) for _ in range(spatial_len)], dim=1)
     elif backend == "bezier":
-        warnings.warn("\"bezier\" backend is vastly slower than \"cubic_spline\" backend.")
-        waves = torch.stack([_generate_bezier_wave(temporal_len, **kwargs) for _ in range(spatial_len)], dim=1)
+        _warnings.warn("\"bezier\" backend is vastly slower than \"cubic_spline\" backend.")
+        waves = _torch.stack([_generate_bezier_wave(temporal_len, **kwargs) for _ in range(spatial_len)], dim=1)
     else:
         raise ValueError(f"The chosen backend {backend} is not supported. Supported backend: \"cubic_spline\", \"bezier\"")
 
-    cumsum_waves = torch.cumsum(waves, 0)
-    cumsum_waves *= torch.true_divide(temporal_len - 1, cumsum_waves[-1, :])
+    cumsum_waves = _torch.cumsum(waves, 0)
+    cumsum_waves *= _torch.true_divide(temporal_len - 1, cumsum_waves[-1, :])
     cumsum_waves = cumsum_waves.t()
 
-    x_range = torch.arange(temporal_len).reshape(1, temporal_len)
+    x_range = _torch.arange(temporal_len).reshape(1, temporal_len)
     y_interp = _interp1d(x_range, cumsum_waves, x)
     if axis:
         return y_interp.t()
@@ -255,10 +255,10 @@ def magnitude_warp(x, axis=0, backend="cubic_spline", **kwargs):
     spatial_len, temporal_len = x.size()
     
     if backend == "cubic_spline":
-        waves = torch.stack([_generate_cubic_spline_wave(temporal_len, **kwargs) for _ in range(spatial_len)], dim=1)
+        waves = _torch.stack([_generate_cubic_spline_wave(temporal_len, **kwargs) for _ in range(spatial_len)], dim=1)
     elif backend == "bezier":
-        warnings.warn("\"bezier\" backend is vastly slower than \"cubic_spline\" backend.")
-        waves = torch.stack([_generate_bezier_wave(temporal_len, **kwargs) for _ in range(spatial_len)], dim=1)
+        _warnings.warn("\"bezier\" backend is vastly slower than \"cubic_spline\" backend.")
+        waves = _torch.stack([_generate_bezier_wave(temporal_len, **kwargs) for _ in range(spatial_len)], dim=1)
     else:
         raise ValueError(f"The chosen backend {backend} is not supported. Supported backend: \"cubic_spline\", \"bezier\"")
 
@@ -270,10 +270,10 @@ def magnitude_warp(x, axis=0, backend="cubic_spline", **kwargs):
 
 def _get_rand_seg_len(x_len, n_segs, std=2.0, **kwargs):
     mean_seg_len = x_len / n_segs
-    seg_len_list = torch.normal(mean_seg_len, std, (n_segs - 1,)).clamp_min(0).round().long()
+    seg_len_list = _torch.normal(mean_seg_len, std, (n_segs - 1,)).clamp_min(0).round().long()
     last_seg_len = x_len - seg_len_list.sum()
-    seg_len_list = torch.cat([seg_len_list, last_seg_len])
-    assert torch.sum(seg_len_list) == x_len, RuntimeError("Unknown fault in permute algorithm")
+    seg_len_list = _torch.cat([seg_len_list, last_seg_len])
+    assert _torch.sum(seg_len_list) == x_len, RuntimeError("Unknown fault in permute algorithm")
     return seg_len_list.tolist()
 
 
@@ -284,9 +284,9 @@ def permute(x, axis=0, n_segs=4, **kwargs):
     _, temporal_len = x.size()
 
     seg_len_list = _get_rand_seg_len(temporal_len, n_segs, **kwargs)
-    x_list = torch.split(x, seg_len_list, dim=1)
-    rand_idx = torch.randperm(n_segs)
-    y = torch.cat([x_list[idx] for idx in rand_idx], dim=1)
+    x_list = _torch.split(x, seg_len_list, dim=1)
+    rand_idx = _torch.randperm(n_segs)
+    y = _torch.cat([x_list[idx] for idx in rand_idx], dim=1)
 
     if axis:
         return y.t()

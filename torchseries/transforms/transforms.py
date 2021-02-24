@@ -1,14 +1,14 @@
-import torch
-import random
+import torch as _torch
+import random as _random
 
 from . import functional as _F
 
 
-class Compose(torch.nn.Module):
+class Compose(_torch.nn.Module):
 
     def __init__(self, transforms):
         super().__init__()
-        self.transforms = torch.nn.ModuleList(transforms)
+        self.transforms = _torch.nn.ModuleList(transforms)
 
     def forward(self, input):
         for t in self.transforms:
@@ -16,15 +16,15 @@ class Compose(torch.nn.Module):
         return input
 
 
-class RandomApply(torch.nn.Module):
+class RandomApply(_torch.nn.Module):
 
     def __init__(self, transforms, p=0.5):
         super().__init__()
         self.p = p
-        self.transforms = torch.nn.ModuleList(transforms)
+        self.transforms = _torch.nn.ModuleList(transforms)
 
     def forward(self, input):
-        if self.p < random.random():
+        if self.p < _random.random():
             return input
         
         for t in self.transforms:
@@ -33,21 +33,21 @@ class RandomApply(torch.nn.Module):
         return input
 
 
-class RandomChoiceApply(torch.nn.Module):
+class RandomChoiceApply(_torch.nn.Module):
 
     def __init__(self, transforms, p=0.5):
         super().__init__()
         self.p = p
-        self.transforms = torch.nn.ModuleList(transforms)
+        self.transforms = _torch.nn.ModuleList(transforms)
 
     def forward(self, input):
-        t = random.choice(self.transforms)
-        if self.p < random.random():
+        t = _random.choice(self.transforms)
+        if self.p < _random.random():
             return input
         return t(input)
 
 
-class ToFloat(torch.nn.Module):
+class ToFloat(_torch.nn.Module):
 
     def __init__(self):
         super().__init__()
@@ -56,16 +56,16 @@ class ToFloat(torch.nn.Module):
         return input.float()
 
 
-class Transpose(torch.nn.Module):
+class Transpose(_torch.nn.Module):
 
     def __init__(self):
         super().__init__()
 
     def forward(self, input):
-        return torch.t(input)
+        return _torch.t(input)
 
 
-class Scale(torch.nn.Module):
+class Scale(_torch.nn.Module):
 
     def __init__(self, mean=1.0, std=0.1, axis=0):
         super().__init__()
@@ -82,7 +82,7 @@ class Scale(torch.nn.Module):
         )
 
 
-class Jitter(torch.nn.Module):
+class Jitter(_torch.nn.Module):
 
     def __init__(self, mean=0.0, std=0.05):
         super().__init__()
@@ -97,7 +97,7 @@ class Jitter(torch.nn.Module):
         )
 
 
-class Rotate(torch.nn.Module):
+class Rotate(_torch.nn.Module):
 
     def __init__(self, axis=0, n_sensors=4, n_channels=6):
         super().__init__()
@@ -117,7 +117,7 @@ class Rotate(torch.nn.Module):
 
         input_reshaped = input.reshape((self.n_sensors * 2), 3, temporal_len)
         input_chunked = input_reshaped.chunk(self.n_sensors)
-        input_rotated = torch.cat([_F.rotate(chunk) for chunk in input_chunked])
+        input_rotated = _torch.cat([_F.rotate(chunk) for chunk in input_chunked])
 
         input_return = input_rotated.reshape(-1, temporal_len)
         if self.axis:
@@ -126,7 +126,7 @@ class Rotate(torch.nn.Module):
         return input_return
 
 
-class TimeWarp(torch.nn.Module):
+class TimeWarp(_torch.nn.Module):
 
     def __init__(self, axis=0, backend="cubic_spline", **kwargs):
         super().__init__()
@@ -144,7 +144,7 @@ class TimeWarp(torch.nn.Module):
         )
 
 
-class MagnitudeWarp(torch.nn.Module):
+class MagnitudeWarp(_torch.nn.Module):
 
     def __init__(self, axis=0, backend="cubic_spline", **kwargs):
         super().__init__()
@@ -162,7 +162,7 @@ class MagnitudeWarp(torch.nn.Module):
         )
 
 
-class Permute(torch.nn.Module):
+class Permute(_torch.nn.Module):
 
     def __init__(self, axis=0, n_segs=4, **kwargs):
         super().__init__()
@@ -180,7 +180,7 @@ class Permute(torch.nn.Module):
         )
 
 
-class Passthrough(torch.nn.Module):
+class Passthrough(_torch.nn.Module):
 
     def __init__(self):
         super().__init__()
