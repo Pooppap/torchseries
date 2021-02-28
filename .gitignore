@@ -130,3 +130,5 @@ dmypy.json
 
 # IPython Notebook
 *.ipynb
+
+*.npy
