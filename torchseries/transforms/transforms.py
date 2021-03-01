@@ -115,7 +115,7 @@ class Rotate(_torch.nn.Module):
 
         assert spatial_len == (self.n_sensors * self.n_channels), f"Incompatible dimension between input dimension {self.axis} ({spatial_len}) and product of n_sensors ({self.n_sensors}) and n_channels ({self.n_channels}). Input dimension {self.axis} is expected to be {self.n_sensors * self.n_channels}"
 
-        input_reshaped = input.reshape((self.n_sensors * 2), 3, temporal_len)
+        input_reshaped = input.reshape((self.n_sensors * (self.n_channels // 3)), 3, temporal_len)
         input_chunked = input_reshaped.chunk(self.n_sensors)
         input_rotated = _torch.cat([_F.rotate(chunk) for chunk in input_chunked])
 

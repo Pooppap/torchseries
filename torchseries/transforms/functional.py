@@ -219,7 +219,7 @@ def jitter(x, mean=0.0, std=0.05):
 def rotate(x):
     axis = 2 * _torch.rand(3) - 1
     angle = 2 * PI * _torch.rand(1) - PI
-    rot = _ax_angle_to_mat(axis, angle)
+    rot = _ax_angle_to_mat(axis, angle).type(x.type())
     return _torch.matmul(rot, x)
 
 
@@ -271,7 +271,7 @@ def magnitude_warp(x, axis=0, backend="cubic_spline", **kwargs):
 def _get_rand_seg_len(x_len, n_segs, std=2.0, **kwargs):
     mean_seg_len = x_len / n_segs
     seg_len_list = _torch.normal(mean_seg_len, std, (n_segs - 1,)).clamp_min(0).round().long()
-    last_seg_len = x_len - seg_len_list.sum()
+    last_seg_len = (x_len - seg_len_list.sum()).reshape(1)
     seg_len_list = _torch.cat([seg_len_list, last_seg_len])
     assert _torch.sum(seg_len_list) == x_len, RuntimeError("Unknown fault in permute algorithm")
     return seg_len_list.tolist()
