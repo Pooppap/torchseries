@@ -4,6 +4,9 @@ import random as _random
 from . import functional as _F
 
 
+PI = 2 * _torch.acos(_torch.zeros(1))
+
+
 class Compose(_torch.nn.Module):
 
     def __init__(self, transforms):
@@ -99,11 +102,12 @@ class Jitter(_torch.nn.Module):
 
 class Rotate(_torch.nn.Module):
 
-    def __init__(self, axis=0, n_sensors=4, n_channels=6):
+    def __init__(self, axis=0, n_sensors=1, n_channels=6, bounds=(-PI/6, PI/6)):
         super().__init__()
         self.axis = axis
         self.n_sensors = n_sensors
         self.n_channels = n_channels
+        self.bounds = bounds
 
     def forward(self, input):
         assert len(input.shape) == 2, f"Expected input to only have 2 dimensions. Instead receive input with dimension of {len(input.shape)}"
@@ -117,7 +121,7 @@ class Rotate(_torch.nn.Module):
 
         input_reshaped = input.reshape((self.n_sensors * (self.n_channels // 3)), 3, temporal_len)
         input_chunked = input_reshaped.chunk(self.n_sensors)
-        input_rotated = _torch.cat([_F.rotate(chunk) for chunk in input_chunked])
+        input_rotated = _torch.cat([_F.rotate(chunk, self.bounds) for chunk in input_chunked])
 
         input_return = input_rotated.reshape(-1, temporal_len)
         if self.axis:

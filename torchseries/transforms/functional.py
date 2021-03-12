@@ -6,9 +6,6 @@ import warnings as _warnings
 from scipy import interpolate as _interpolate
 
 
-PI = 2 * _torch.acos(_torch.zeros(1))
-
-
 def _ax_angle_to_mat(axis, angle):
     n = _torch.norm(axis)
     x, y, z = axis / n
@@ -216,9 +213,9 @@ def jitter(x, mean=0.0, std=0.05):
     return x + noise
 
 
-def rotate(x):
+def rotate(x, bounds):
     axis = 2 * _torch.rand(3) - 1
-    angle = 2 * PI * _torch.rand(1) - PI
+    angle = (bounds[1] - bounds[0]) * _torch.rand(1) + bounds[0]
     rot = _ax_angle_to_mat(axis, angle).type(x.type())
     return _torch.matmul(rot, x)
 
